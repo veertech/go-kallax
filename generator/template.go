@@ -293,7 +293,11 @@ func (td *TemplateData) GenSubSchemas() string {
 				buf.WriteString("*kallax.JSONSchemaArray\n")
 			}
 		} else {
-			buf.WriteString("*kallax.BaseSchemaField\n")
+			if !isRootField(field) && field.IsJSON {
+				buf.WriteString("*kallax.JSONSchemaKey\n")
+			} else {
+				buf.WriteString("*kallax.BaseSchemaField\n")
+			}
 		}
 		td.genFieldsSchema(&buf, name, field.Fields)
 		buf.WriteString("}\n\n")
