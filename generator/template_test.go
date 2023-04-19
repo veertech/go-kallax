@@ -302,7 +302,7 @@ Foo:kallax.NewJSONSchemaKey(kallax.JSONText, "jsonarray", fmt.Sprint(n), "Foo"),
 }
 
 type schemaFooJSONOther struct {
-*kallax.BaseSchemaField
+*kallax.JSONSchemaKey
 A kallax.SchemaField
 }
 
