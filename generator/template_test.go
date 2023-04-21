@@ -249,6 +249,7 @@ const jsonBaseTpl = `
 		Bar *string
 		Arr []string
 		JSON JSON
+		JSONPtr *JSON
 		URL *url.URL
 		UrlNoPtr url.URL
 		Rel Rel
@@ -262,6 +263,7 @@ Foo kallax.SchemaField
 Bar kallax.SchemaField
 Arr kallax.SchemaField
 JSON *schemaFooJSON
+JSONPtr *schemaFooJSONPtr
 URL kallax.SchemaField
 UrlNoPtr kallax.SchemaField
 InverseFK kallax.SchemaField
@@ -306,6 +308,32 @@ type schemaFooJSONOther struct {
 A kallax.SchemaField
 }
 
+type schemaFooJSONPtr struct {
+*kallax.BaseSchemaField
+Foo kallax.SchemaField
+Other *schemaFooJSONPtrOther
+Arr *schemaFooJSONPtrArr
+}
+
+type schemaFooJSONPtrArr struct {
+*kallax.JSONSchemaArray
+X kallax.SchemaField
+Y kallax.SchemaField
+}
+
+func (s *schemaFooJSONPtrArr) At(n int) *schemaFooJSONPtrArr {
+return &schemaFooJSONPtrArr{
+JSONSchemaArray: kallax.NewJSONSchemaArray("jsonptr", "Arr"),
+X:kallax.NewJSONSchemaKey(kallax.JSONInt, "jsonptr", "Arr", fmt.Sprint(n), "redefined"),
+Y:kallax.NewJSONSchemaKey(kallax.JSONInt, "jsonptr", "Arr", fmt.Sprint(n), "Y"),
+}
+}
+
+type schemaFooJSONPtrOther struct {
+*kallax.JSONSchemaKey
+A kallax.SchemaField
+}
+
 `
 
 func (s *TemplateSuite) TestGenModelSchema() {
@@ -333,6 +361,19 @@ X:kallax.NewJSONSchemaKey(kallax.JSONInt, "json", "Arr", "redefined"),
 Y:kallax.NewJSONSchemaKey(kallax.JSONInt, "json", "Arr", "Y"),
 },
 },
+JSONPtr:&schemaFooJSONPtr{
+BaseSchemaField: kallax.NewSchemaField("jsonptr").(*kallax.BaseSchemaField),
+Foo:kallax.NewJSONSchemaKey(kallax.JSONText, "jsonptr", "Foo"),
+Other:&schemaFooJSONPtrOther{
+JSONSchemaKey: kallax.NewJSONSchemaKey(kallax.JSONAny, "jsonptr", "Other"),
+A:kallax.NewJSONSchemaKey(kallax.JSONBool, "jsonptr", "Other", "A"),
+},
+Arr:&schemaFooJSONPtrArr{
+JSONSchemaArray: kallax.NewJSONSchemaArray("jsonptr", "Arr"),
+X:kallax.NewJSONSchemaKey(kallax.JSONInt, "jsonptr", "Arr", "redefined"),
+Y:kallax.NewJSONSchemaKey(kallax.JSONInt, "jsonptr", "Arr", "Y"),
+},
+},
 URL:kallax.NewSchemaField("url"),
 UrlNoPtr:kallax.NewSchemaField("url_no_ptr"),
 InverseFK:kallax.NewSchemaField("rel_id"),
@@ -345,7 +386,6 @@ Foo:kallax.NewJSONSchemaKey(kallax.JSONText, "jsonarray", "Foo"),
 func (s *TemplateSuite) TestGenSchemaInit() {
 	s.processSource(jsonBaseTpl)
 	m := findModel(s.td.Package, "Foo")
-
 	s.Equal(expectedInit, s.td.GenSchemaInit(m))
 }
 
