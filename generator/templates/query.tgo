@@ -41,6 +41,12 @@ func (q *{{.QueryName}}) Order(cols ...kallax.ColumnOrder) *{{.QueryName}} {
 	return q
 }
 
+// Group adds group clauses to the query for the given columns.
+func (q *{{.QueryName}}) Group(cols ...kallax.SchemaField) *{{.QueryName}} {
+	q.BaseQuery.Group(cols...)
+	return q
+}
+
 // BatchSize sets the number of items to fetch per batch when there are 1:N
 // relationships selected in the query.
 func (q *{{.QueryName}}) BatchSize(size uint64) *{{.QueryName}} {

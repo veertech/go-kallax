@@ -219,6 +219,16 @@ func (q *BaseQuery) Order(cols ...ColumnOrder) {
 	q.builder = q.builder.OrderBy(c...)
 }
 
+// Group adds the given group clauses to the list of columns to group the
+// results by.
+func (q *BaseQuery) Group(cols ...SchemaField) {
+	var c = make([]string, len(cols))
+	for i, v := range cols {
+		c[i] = v.QualifiedName(q.schema)
+	}
+	q.builder = q.builder.GroupBy(c...)
+}
+
 // BatchSize sets the batch size.
 func (q *BaseQuery) BatchSize(size uint64) {
 	q.batchSize = size
@@ -252,9 +262,10 @@ func (q *BaseQuery) GetOffset() uint64 {
 
 // Where adds a new condition to filter the query. All conditions added are
 // concatenated with "and".
-//   q.Where(Eq(NameColumn, "foo"))
-//   q.Where(Gt(AgeColumn, 18))
-//   // ... WHERE name = "foo" AND age > 18
+//
+//	q.Where(Eq(NameColumn, "foo"))
+//	q.Where(Gt(AgeColumn, 18))
+//	// ... WHERE name = "foo" AND age > 18
 func (q *BaseQuery) Where(cond Condition) {
 	q.builder = q.builder.Where(cond(q.schema))
 }
